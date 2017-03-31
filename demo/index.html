@@ -1,0 +1,188 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+  <title>api-designer-nav demo</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../raml-docs-helpers/raml-docs-parser.html">
+  <link rel="import" href="../../raml-path-selector/raml-path-selector.html">
+  <link rel="import" href="../../raml-path-to-object/raml-path-to-object.html">
+  <link rel="import" href="../../paper-toast/paper-toast.html">
+  <link rel="import" href="../api-designer-nav.html">
+
+  <style is="custom-style" include="demo-pages-shared-styles">
+
+    .vertical-section-container {
+      max-width: 600px;
+    }
+
+    .nav-demo {
+      border: 1px #607D8B solid;
+      height: 50vh;
+      @apply(--layout-vertical);
+    }
+
+    .console-content {
+      @apply(--layout-flex);
+      overflow: auto;
+      position: relative;
+    }
+
+    raml-path-selector {
+      @apply(--layout-fit);
+      transition-property: -webkit-transform;
+      transition-property: transform;
+      -webkit-transition-duration: 0.24s;
+      transition-duration: 0.24s;
+      -webkit-transform: translate3d(-100%, 0, 0);
+      transform: translate3d(-100%, 0, 0);
+    }
+
+    raml-path-selector.opened {
+      transform: translate3d(0px, 0px, 0px);
+    }
+
+    *[hidden] {
+      display: none;
+    }
+
+    p {
+      margin: 1rem;
+    }
+  </style>
+</head>
+<body unresolved>
+  <div class="vertical-section-container centered">
+    <raml-docs-parser></raml-docs-parser>
+    <raml-path-to-object selected-object="{{selectedObject}}" is-method="{{isMethod}}" is-resource="{{isResource}}" is-documentation="{{isDocumentation}}"></raml-path-to-object>
+    <h3>The `api-designer-nav`</h3>
+
+    <section class="nav-demo">
+      <div class="console-content">
+        <raml-path-selector narrow="true" first-level-opened resources-opened documentation-opened></raml-path-selector>
+        <div class="background-content">
+          <p id="noRaml">Set a RAML content to begin</p>
+          <p id="methodDisplay" hidden>Selected: HTTP method documentation view</p>
+          <p id="resourceDisplay" hidden>Selected: Resource documentation view</p>
+          <p id="typeDisplay" hidden>Selected: Type documentation view</p>
+          <p id="documentationDisplay" hidden>Selected: Documentation item view</p>
+          <p id="summaryDisplay" hidden>Selected: Summary view</p>
+        </div>
+      </div>
+      <api-designer-nav></api-designer-nav>
+    </div>
+  </div>
+  <paper-toast text="Try it has been requested" id="tryit"></paper-toast>
+  <paper-toast text="The view has been pinned" id="pinned"></paper-toast>
+  <paper-toast text="The view has been unpinned" id="unpinned"></paper-toast>
+  <script>
+  var $ = function(selector) {
+    return document.querySelector(selector);
+  };
+  $('raml-docs-parser').addEventListener('raml-ready', function(e) {
+    $('raml-path-selector').raml = e.detail.raml;
+    $('raml-path-to-object').raml = e.detail.raml;
+    $('#noRaml').setAttribute('hidden', true);
+  });
+  function toggleMenu(opened) {
+    var elm = $('raml-path-selector');
+    if (opened) {
+      elm.classList.add('opened');
+    } else {
+      elm.classList.remove('opened');
+    }
+    var nav = $('api-designer-nav');
+    if (nav.menuOpened !== opened) {
+      nav.menuOpened = opened;
+    }
+  }
+  window.addEventListener('raml-selected-path-changed', function(e) {
+    $('raml-path-to-object').selectedPath = e.detail.path;
+    toggleMenu(false);
+  });
+
+  window.addEventListener('api-console-menu-opened-changed', function(e) {
+    var opened = e.detail.value;
+    toggleMenu(opened);
+  });
+
+  function toggleDisplay(id, state) {
+    var display = $('#' + id);
+    if (state) {
+      display.removeAttribute('hidden');
+    } else {
+      display.setAttribute('hidden', true);
+    }
+  }
+
+  window.addEventListener('raml-is-method-changed', function(e) {
+    var isMethod = e.detail.state;
+    toggleDisplay('methodDisplay', isMethod);
+    var nav = $('api-designer-nav');
+    if (isMethod) {
+      nav.showTryit = true;
+    } else {
+      nav.showTryit = false;
+    }
+  });
+
+  window.addEventListener('raml-is-resource-changed', function(e) {
+    var isResource = e.detail.state;
+    toggleDisplay('resourceDisplay', isResource);
+  });
+
+  window.addEventListener('raml-is-documentation-changed', function(e) {
+    var isDoc = e.detail.state;
+    toggleDisplay('documentationDisplay', isDoc);
+  });
+
+  window.addEventListener('raml-is-type-changed', function(e) {
+    var isType = e.detail.state;
+    toggleDisplay('typeDisplay', isType);
+  });
+
+  window.addEventListener('raml-is-summary-changed', function(e) {
+    var isSummary = e.detail.state;
+    toggleDisplay('summaryDisplay', isSummary);
+    var nav = $('api-designer-nav');
+    if (!isSummary) {
+      nav.showHome = true;
+    } else {
+      nav.showHome = false;
+    }
+  });
+
+  window.addEventListener('api-console-home-requested', function() {
+    $('raml-path-selector').selectedPath = 'summary';
+  });
+
+  window.addEventListener('api-console-tryit-requested', function() {
+    $('#tryit').opened = true;
+  });
+
+  window.addEventListener('api-console-pinned-state-changed', function(e) {
+    var state = e.detail.value;
+    if (state) {
+      $('#pinned').opened = true;
+    } else {
+      $('#unpinned').opened = true;
+    }
+  });
+  </script>
+</body>
+</html>

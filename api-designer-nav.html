@@ -1,0 +1,224 @@
+<!--
+@license
+Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-button/paper-button.html">
+
+<link rel="import" href="../arc-icons/arc-icons.html">
+<link rel="import" href="../anypoint-styles/colors.html">
+<!--
+A bottom navigation for the API console for the API designer application.
+
+It provides a way to call the main navigation (which is hidden by default),
+go to the starting page (probably the summary view for the API), go to "try it"
+screen or to pin the current view.
+
+This element is event based and application hosting this element should
+handle all events fired by this element. See events docs for more details.
+
+### Example
+```
+<api-designer-nav></api-designer-nav>
+```
+
+The element fires HTML events to inform parent elements(s) or application about
+user intention. It doesn't control the flow itself.
+
+In case of API designer, the view displayed in the documentation view (the API
+console view area) depends on current user's cursor position and it changes when
+user context change (HTTP method viewer will be displayed when the cursor in
+the code are is in context of method and so on). To hold current view and
+prohibit this behavior the user can use "pin view" option to inform the
+application to not change the view until user request it by navigating to
+different view.
+
+Application can add it's own actions. Each action element (button, icon etc)
+must have `action` attribute to be included in the actions list.
+
+```
+<api-designer-nav>
+  <button action>Click me!</button>
+</api-designer-nav>
+```
+The "click me" button will be rendered after all primary actions but before
+pin action.
+
+See demo page source for complete example of how to implement this element
+alongside the `raml-path-selector` with the API designer.
+
+### Styling
+`<api-designer-nav>` provides the following custom properties and mixins for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--api-designer-nav` | Mixin applied to the element | `{}`
+`--api-designer-nav-background-color` | Background color of the bottom navigation | `--anypoint-color-aluminum3`
+`--api-designer-nav-tryit-background-color` | The "try it" button backgound color | `--anypoint-color-primary`
+`--api-designer-nav-tryit-color` | The "try it" button font color | `--anypoint-color-tertiary`
+`--api-designer-nav-icon-color` | Color of the icon buttons | `rgba(0, 0, 0, 0.54)`
+`--api-designer-nav-icon-color-active` | Color of the active (toggled) icon button | `--anypoint-color-primary`
+
+@group UI Elements
+@element api-designer-nav
+@demo demo/index.html
+-->
+<dom-module id="api-designer-nav">
+  <template>
+    <style>
+    :host {
+      display: block;
+      height: 48px;
+
+      @apply(--api-designer-nav);
+    }
+
+    .container {
+      height: 100%;
+      background-color: var(--api-designer-nav-background-color, --anypoint-color-aluminum3);
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+    }
+
+    .spacer {
+      @apply(--layout-flex);
+    }
+
+    .action-button {
+      background-color: var(--api-designer-nav-tryit-background-color, --anypoint-color-primary);
+      color: var(--api-designer-nav-tryit-color, --anypoint-color-tertiary);
+    }
+
+    paper-button {
+      border-radius: 0;
+    }
+
+    paper-icon-button {
+      color: var(--api-designer-nav-icon-color, rgba(0, 0, 0, 0.54));
+    }
+
+    paper-icon-button[active] {
+      color: var(--api-designer-nav-icon-color-active, --anypoint-color-primary);
+    }
+    </style>
+    <div class="container">
+      <paper-icon-button icon="[[_computeMenuIcon(menuOpened)]]" noink title="Toggle menu" on-tap="_menuToggle"></paper-icon-button>
+      <paper-icon-button icon="arc:home" noink title="Open summary screen" hidden$="[[!showHome]]" on-tap="_goHome"></paper-icon-button>
+      <paper-button class="action-button" noink title="Try the request in the request editor" hidden$="[[!showTryit]]" on-tap="_goTryIt">Try it</paper-button>
+      <content select="[action]"></content>
+      <span class="spacer"></span>
+      <paper-icon-button icon="arc:anypoint-pin" toggles active="[[pinned]]" noink title="Don't change current view" on-tap="_pinToggle"></paper-icon-button>
+    </div>
+  </template>
+  <script>
+  Polymer({
+    is: 'api-designer-nav',
+    /**
+     * Fired when the user selectes the "pinner" option.
+     * Note that the icon state will change to selected / deselected whether
+     * the app handle the event or not.
+     *
+     * @event api-console-pinned-state-changed
+     * @param {Boolean} value Current state of the `pinned` property.
+     */
+    /**
+     * Fired when the user toggles the menu.
+     * Note that the element will change the icon state whether the app handle
+     * the event or not.
+     *
+     * @event api-console-menu-opened-changed
+     * @param {Boolean} value Current state of the `menuOpened` property.
+     */
+    /**
+     * Fired when the user click on the "home" button.
+     * The application should display default view (probably summary view).
+     *
+     * @event api-console-home-requested
+     */
+    /**
+     * Fired when the user click on the "try it" button.
+     * The application should read current path / selected object and display
+     * the `raml-request-panel` panel view.
+     *
+     * @event api-console-tryit-requested
+     */
+    properties: {
+      /**
+       * If set to true it informs the element that the main navigation
+       * menu is opened and first icon should be "close" instead of "menu"
+       */
+      menuOpened: {
+        type: Boolean,
+        value: false
+      },
+      /**
+       * If true current view in the API designer should not be changed
+       * automatically until the user unpin it.
+       */
+      pinned: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+      /**
+       * Set to true to display "home" button.
+       */
+      showHome: {
+        type: Boolean,
+        value: false
+      },
+      /**
+       * Set to true to display "home" button.
+       */
+      showTryit: {
+        type: Boolean,
+        value: false
+      }
+    },
+    // Computes the icon value for the menu toggle icon.
+    _computeMenuIcon: function(menuOpened) {
+      return menuOpened ? 'arc:close' : 'arc:menu';
+    },
+    // Toogles pinned. Fires `api-console-pinned-state-changed` event.
+    _pinToggle: function() {
+      this.pinned = !this.pinned;
+      this.fire('api-console-pinned-state-changed', {
+        value: this.pinned
+      });
+    },
+    // Fires the `api-console-menu-opened-changed` event and toggles the
+    // `menuOpened` property.
+    _menuToggle: function() {
+      this.menuOpened = !this.menuOpened;
+      this.fire('api-console-menu-opened-changed', {
+        value: this.menuOpened
+      });
+    },
+    /**
+     * Fires the `api-console-home-requested` event to notify parent elements
+     * / app to navigate to main screen (probably summary doc).
+     */
+    _goHome: function() {
+      this.fire('api-console-home-requested');
+    },
+    /**
+     * Fires the `api-console-tryit-requested` event to notify parent elements
+     * / app to navigate to the raml-request-panel.
+     */
+    _goTryIt: function() {
+      this.fire('api-console-tryit-requested');
+    }
+  });
+  </script>
+</dom-module>

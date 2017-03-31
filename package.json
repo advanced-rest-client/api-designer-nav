@@ -1,0 +1,33 @@
+{
+  "name": "api-designer-nav",
+  "version": "0.0.1",
+  "license": "Apache-2.0 OR CC-BY-4.0",
+  "description": "Bottom navigation for the API designer",
+  "devDependencies": {
+    "polymer-cli": "^0.16.0"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "private": false,
+  "main": [
+    "api-designer-nav.html"
+  ],
+  "author": "The Advanced REST client authors <arc@mulesoft.com>",
+  "scripts": {
+    "serve": "node_modules/.bin/polymer serve",
+    "lint": "node_modules/.bin/polymer lint api-designer-nav.html",
+    "test-sauce": "node_modules/.bin/polymer test --plugin sauce --job-name \"api-designer-nav:local-test\"",
+    "test": "node_modules/.bin/polymer test",
+    "deps": "npm install --quiet && bower install --quiet",
+    "update-deps": "npm update --quiet && bower update --quiet"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/advanced-rest-client/api-designer-nav.git"
+  },
+  "bugs": {
+    "url": "https://github.com/advanced-rest-client/api-designer-nav/issues",
+    "email": "arc@mulesoft.com"
+  }
+}
