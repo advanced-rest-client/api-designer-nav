@@ -15,7 +15,6 @@ the License.
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-button/paper-button.html">
-
 <link rel="import" href="../arc-icons/arc-icons.html">
 <link rel="import" href="../anypoint-styles/colors.html">
 <!--
@@ -113,12 +112,12 @@ Custom property | Description | Default
     }
     </style>
     <div class="container">
-      <paper-icon-button icon="[[_computeMenuIcon(menuOpened)]]" noink title="Toggle menu" on-tap="_menuToggle"></paper-icon-button>
-      <paper-icon-button icon="arc:home" noink title="Open summary screen" hidden$="[[!showHome]]" on-tap="_goHome"></paper-icon-button>
-      <paper-button class="action-button" noink title="Try the request in the request editor" hidden$="[[!showTryit]]" on-tap="_goTryIt">Try it</paper-button>
+      <paper-icon-button class="menu-toggle" icon="[[_computeMenuIcon(menuOpened)]]" noink title="Toggle menu" on-tap="_menuToggle"></paper-icon-button>
+      <paper-icon-button class="home-button" icon="arc:home" noink title="Open summary screen" hidden$="[[!showHome]]" on-tap="_goHome"></paper-icon-button>
+      <paper-button class="action-button tryit-button" noink title="Try the request in the request editor" hidden$="[[!showTryit]]" on-tap="_goTryIt">Try it</paper-button>
       <content select="[action]"></content>
       <span class="spacer"></span>
-      <paper-icon-button icon="arc:anypoint-pin" toggles active="[[pinned]]" noink title="Don't change current view" on-tap="_pinToggle"></paper-icon-button>
+      <paper-icon-button class="pin-toggle" icon="arc:anypoint-pin" toggles active="[[pinned]]" noink title="Don't change current view" on-tap="_pinToggle"></paper-icon-button>
     </div>
   </template>
   <script>
