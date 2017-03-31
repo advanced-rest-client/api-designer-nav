@@ -18,7 +18,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="../../iron-test-helpers/test-helpers.js"></script>
     <script src="../../iron-test-helpers/mock-interactions.js"></script>
 
-    <!-- Step 1: import the element to test -->
     <link rel="import" href="../api-designer-nav.html">
   </head>
   <body>
@@ -30,14 +29,44 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </test-fixture>
 
     <script>
-    /* global suite, test, fixture, assert */
+    /* global fixture, assert, sinon, MockInteractions */
     suite('basic', function() {
       var element;
       setup(function() {
         element = fixture('basic');
       });
-      test('`api-designer-nav` should be initialized', function() {
-        assert.equal(element.isAttached, true, 'element.isAttached equals true');
+      test('Should fire api-console-pinned-state-changed event', function() {
+        var spy = sinon.stub();
+        element.addEventListener('api-console-pinned-state-changed', spy);
+        var button = Polymer.dom(element.root).querySelector('.pin-toggle');
+        MockInteractions.tap(button);
+        assert.isTrue(spy.calledOnce, 'Event has been called once');
+        assert.isTrue(element.pinned, 'pinned property is eq true');
+      });
+
+      test('Should fire api-console-menu-opened-changed event', function() {
+        var spy = sinon.stub();
+        element.addEventListener('api-console-menu-opened-changed', spy);
+        var button = Polymer.dom(element.root).querySelector('.menu-toggle');
+        MockInteractions.tap(button);
+        assert.isTrue(spy.calledOnce);
+        assert.isTrue(element.menuOpened, 'menuOpened property is eq true');
+      });
+
+      test('Should fire api-console-home-requested event', function() {
+        var spy = sinon.stub();
+        element.addEventListener('api-console-home-requested', spy);
+        var button = Polymer.dom(element.root).querySelector('.home-button');
+        MockInteractions.tap(button);
+        assert.isTrue(spy.calledOnce);
+      });
+
+      test('Should fire api-console-tryit-requested event', function() {
+        var spy = sinon.stub();
+        element.addEventListener('api-console-tryit-requested', spy);
+        var button = Polymer.dom(element.root).querySelector('.tryit-button');
+        MockInteractions.tap(button);
+        assert.isTrue(spy.calledOnce);
       });
     });
     </script>
